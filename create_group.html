@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Group</title>
+    <style>
+        body { font-family: Arial; margin: 0; background: #f5f5f5; }
+        .navbar { background: #2c3e50; color: white; padding: 15px 30px; }
+        .container { max-width: 600px; margin: 30px auto; background: white; padding: 30px; border-radius: 8px; }
+        input, textarea { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        textarea { height: 100px; }
+        button { padding: 12px 30px; background: #9b59b6; color: white; border: none; cursor: pointer; border-radius: 4px; margin-top: 10px; }
+        button:hover { background: #8e44ad; }
+        .back-btn { background: #95a5a6; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>Create New Group</h1>
+    </div>
+    <div class="container">
+        <form method="post">
+            {% csrf_token %}
+            <input type="text" name="name" placeholder="Group Name" required>
+            <textarea name="description" placeholder="Group Description"></textarea>
+            <button type="submit">Create Group</button>
+            
+            <a href="/"><button type="button" class="back-btn">Cancel</button></a>
+        </form>
+    </div>
+</body>
+</html>

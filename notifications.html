@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Notifications</title>
+    <style>
+        body { font-family: Arial; margin: 0; background: #f5f5f5; }
+        .navbar { background: #2c3e50; color: white; padding: 15px 30px; }
+        .container { max-width: 900px; margin: 30px auto; background: white; padding: 30px; border-radius: 8px; }
+        .invitation { background: #f9f9f9; padding: 20px; margin: 15px 0; border-radius: 5px; border-left: 4px solid #3498db; }
+        button { padding: 10px 20px; margin: 5px; border: none; cursor: pointer; border-radius: 4px; color: white; }
+        .accept-btn { background: #27ae60; }
+        .reject-btn { background: #e74c3c; }
+        .back-btn { background: #95a5a6; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🔔 Notifications</h1>
+    </div>
+    <div class="container">
+        <a href="/"><button class="back-btn">← Back to Home</button></a>
+        <h2>Group Invitations</h2>
+        {% for invitation in invitations %}
+        <div class="invitation">
+            <p><strong>{{ invitation.invited_by.username }}</strong> invited you to join <strong>{{ invitation.group.name }}</strong></p>
+            <p style="color: #666; font-size: 14px;">{{ invitation.group.description }}</p>
+            <form method="post" style="display: inline;">
+                {% csrf_token %}
+                <input type="hidden" name="invitation_id" value="{{ invitation.id }}">
+                <button type="submit" name="action" value="accept" class="accept-btn">Accept</button>
+                <button type="submit" name="action" value="reject" class="reject-btn">Reject</button>
+            </form>
+        </div>
+        {% empty %}
+        <p>No pending invitations.</p>
+        {% endfor %}
+    </div>
+</body>
+</html>

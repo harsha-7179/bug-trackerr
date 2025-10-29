@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bug Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: Arial; margin: 0; background: #f5f5f5; }
+        .navbar { background: #2c3e50; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .navbar h1 { margin: 0; font-size: 24px; }
+        .navbar-right { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+        .notification-bell { position: relative; cursor: pointer; font-size: 24px; }
+        .notification-badge { position: absolute; top: -8px; right: -8px; background: #e74c3c; color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px; }
+        .container { max-width: 1200px; margin: 30px auto; padding: 15px; }
+        .auth-box { background: white; padding: 20px; margin-bottom: 30px; border-radius: 5px; }
+        input { padding: 8px; margin: 5px; width: 100%; max-width: 200px; border: 1px solid #ddd; border-radius: 4px; }
+        button { padding: 10px 20px; background: #3498db; color: white; border: none; cursor: pointer; border-radius: 4px; margin: 5px; }
+        button:hover { background: #2980b9; }
+        .create-group-btn { background: #9b59b6; margin-bottom: 20px; width: 100%; max-width: 200px; }
+        .group-card { background: white; padding: 20px; margin: 15px 0; border-radius: 5px; border-left: 4px solid #3498db; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .view-bugs-btn { background: #27ae60; }
+        
+        @media (max-width: 768px) {
+            .navbar { padding: 10px 15px; }
+            .navbar h1 { font-size: 18px; width: 100%; margin-bottom: 10px; }
+            .navbar-right { width: 100%; justify-content: space-between; }
+            .auth-box form { display: block !important; margin-bottom: 15px; }
+            input { max-width: 100%; }
+            .group-card { flex-direction: column; align-items: flex-start; }
+            .view-bugs-btn { width: 100%; }
+            button { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🐛 Bug Tracker</h1>
+        {% if user.is_authenticated %}
+        <div class="navbar-right">
+            <span>Hello, <strong>{{ user.username }}</strong></span>
+            <a href="/notifications/" style="color: white; text-decoration: none;">
+                <div class="notification-bell">
+                    🔔
+                    {% if pending_invitations > 0 %}
+                    <span class="notification-badge">{{ pending_invitations }}</span>
+                    {% endif %}
+                </div>
+            </a>
+            <form method="post" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" name="logout" style="background: #e74c3c;">Logout</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="container">
+        {% if not user.is_authenticated %}
+        <div class="auth-box">
+            <form method="post" style="display:inline-block; margin-right:20px;">
+                {% csrf_token %}
+                <input type="text" name="username" placeholder="Username" required>
+                <input type="password" name="password" placeholder="Password" required>
+                <button type="submit" name="login">Login</button>
+            </form>
+            <form method="post" style="display:inline-block;">
+                {% csrf_token %}
+                <input type="text" name="username" placeholder="Username" required>
+                <input type="password" name="password" placeholder="Password" required>
+                <button type="submit" name="signup">Sign Up</button>
+            </form>
+        </div>
+        {% else %}
+        <a href="/create-group/"><button class="create-group-btn">Create New Group</button></a>
+        
+        <h2>Your Groups</h2>
+        {% if groups %}
+            {% for group in groups %}
+            <div class="group-card">
+                <div>
+                    <h3 style="margin: 0 0 5px 0;">{{ group.name }}</h3>
+                    <p style="margin: 0; color: #666; font-size: 14px;">{{ group.description }}</p>
+                </div>
+                <div style="width: 100%; max-width: 150px;">
+                    <a href="/group/{{ group.id }}/" style="text-decoration: none;"><button class="view-bugs-btn" style="width: 100%;">View Bugs</button></a>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>You haven't joined any groups yet. Create one or wait for an invitation!</p>
+        {% endif %}
+        {% endif %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ group.name }} - Bugs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: Arial; margin: 0; background: #f5f5f5; }
+        .navbar { background: #2c3e50; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .navbar h1 { margin: 0; font-size: 24px; }
+        .main-container { display: flex; max-width: 1400px; margin: 30px auto; padding: 0 15px; flex-wrap: wrap; }
+        .sidebar { width: 250px; background: white; padding: 20px; border-radius: 5px; margin-right: 20px; margin-bottom: 20px; height: fit-content; }
+        .content { flex: 1; min-width: 300px; }
+        .member { padding: 10px; margin: 5px 0; border-radius: 5px; background: #f9f9f9; }
+        .member.developer { background: #fff3cd; border-left: 4px solid #ffc107; }
+        input, textarea, select { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; width: 100%; max-width: 400px; }
+        textarea { height: 60px; }
+        button { padding: 10px 20px; background: #3498db; color: white; border: none; cursor: pointer; border-radius: 4px; margin: 5px; }
+        .header-actions { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .manage-btn { background: #9b59b6; }
+        .leave-btn { background: #e74c3c; }
+        .back-btn { background: #95a5a6; }
+        table { width: 100%; background: white; border-collapse: collapse; border-radius: 5px; overflow-x: auto; display: block; }
+        th { background: #34495e; color: white; padding: 12px; text-align: left; white-space: nowrap; }
+        td { padding: 12px; border-bottom: 1px solid #ddd; }
+        tr:hover { background: #f5f5f5; }
+        .status-badge { padding: 5px 10px; border-radius: 3px; font-size: 12px; display: inline-block; white-space: nowrap; }
+        .status-Open { background: #ff6b6b; color: white; }
+        .status-Resolved { background: #51cf66; color: white; }
+        .status-Closed { background: #ffd43b; }
+        .status-InProgress { background: #4dabf7; color: white; }
+        .form-box { background: white; padding: 20px; margin-bottom: 20px; border-radius: 5px; }
+        
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .navbar h1 { font-size: 18px; }
+            .main-container { flex-direction: column; }
+            .sidebar { width: 100%; margin-right: 0; }
+            input, textarea, select { max-width: 100%; }
+            table { font-size: 12px; }
+            th, td { padding: 8px; }
+            button { padding: 8px 12px; font-size: 14px; }
+            .header-actions { flex-direction: column; }
+            .header-actions button { width: 100%; }
+        }
+        
+        @media (max-width: 480px) {
+            .navbar { padding: 10px 15px; }
+            .form-box { padding: 15px; }
+            table { font-size: 11px; }
+            th, td { padding: 6px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🐛 {{ group.name }}</h1>
+        <span>Hello, <strong>{{ user.username }}</strong></span>
+    </div>
+    
+    <div class="main-container">
+        <div class="sidebar">
+            <h3>Team Members</h3>
+            {% for member in members %}
+            <div class="member {% if member.role == 'developer' %}developer{% endif %}">
+                <strong>{{ member.username }}</strong>
+                {% if member.role == 'developer' %}
+                <br><small style="color: #856404;">Developer</small>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="content">
+            <div class="header-actions">
+                <a href="/"><button class="back-btn">← Back</button></a>
+                {% if is_admin %}
+                <a href="/manage-group/{{ group.id }}/"><button class="manage-btn">Manage Team</button></a>
+                {% endif %}
+                {% if not is_creator %}
+                <form method="post" style="margin: 0; width: auto;">
+                    {% csrf_token %}
+                    <button type="submit" name="leave_group" class="leave-btn" onclick="return confirm('Leave group?')">Leave Group</button>
+                </form>
+                {% endif %}
+            </div>
+            
+            <div class="form-box">
+                <h2>Report Bug</h2>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div>
+                        <input type="text" name="title" placeholder="Subject" required>
+                    </div>
+                    <div>
+                        <textarea name="description" placeholder="Description" required></textarea>
+                    </div>
+                    <div>
+                        <select name="status">
+                            <option value="Open">Open</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Resolved">Resolved</option>
+                            <option value="Closed">Closed</option>
+                        </select>
+                        <input type="date" name="start_date" placeholder="Start Date">
+                        <input type="date" name="due_date" placeholder="Due Date">
+                        <input type="number" name="estimated_hours" placeholder="Est. Hours" style="max-width: 100px;">
+                    </div>
+                    <div>
+                        <input type="file" name="attachment" accept="image/*,video/*">
+                        <small style="color: #666;">Upload image or video (optional)</small>
+                    </div>
+                    <button type="submit" name="add_bug">Submit Bug</button>
+                </form>
+            </div>
+
+            <h2>All Bugs ({{ bugs.count }})</h2>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Status</th>
+                            <th>Start Date</th>
+                            <th>Due Date</th>
+                            <th>Hours</th>
+                            <th>Attachment</th>
+                            <th>Reported By</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bug in bugs %}
+                        <tr>
+                            <td><strong>{{ bug.title }}</strong><br><small style="color: #666;">{{ bug.description|truncatewords:10 }}</small></td>
+                            <td><span class="status-badge status-{{ bug.status|cut:' ' }}">{{ bug.status }}</span></td>
+                            <td>{{ bug.start_date|date:"M d, Y"|default:"-" }}</td>
+                            <td>{{ bug.due_date|date:"M d, Y"|default:"-" }}</td>
+                            <td>{{ bug.estimated_hours|default:"-" }}</td>
+                            <td>
+                                {% if bug.attachment %}
+                                    <a href="/media/{{ bug.attachment }}" target="_blank" style="color: #3498db;">📎</a>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>{{ bug.created_by }}</td>
+                            <td>
+                                <form method="post" style="margin: 0;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="bug_id" value="{{ bug.id }}">
+                                    <button type="submit" name="delete" style="background: #dc3545; padding: 5px 10px; font-size: 11px;">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="8" style="text-align: center;">No bugs reported yet</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

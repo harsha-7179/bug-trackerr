@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage Group</title>
+    <style>
+        body { font-family: Arial; margin: 0; background: #f5f5f5; }
+        .navbar { background: #2c3e50; color: white; padding: 15px 30px; }
+        .container { max-width: 900px; margin: 30px auto; background: white; padding: 30px; border-radius: 8px; }
+        .member { background: #f9f9f9; padding: 15px; margin: 10px 0; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .member.developer { background: #fff3cd; border-left: 4px solid #ffc107; }
+        .admin-badge { background: #e74c3c; color: white; padding: 3px 10px; border-radius: 3px; font-size: 12px; margin-left: 10px; }
+        .developer-badge { background: #ffc107; color: #000; padding: 3px 10px; border-radius: 3px; font-size: 12px; margin-left: 10px; }
+        button { padding: 8px 15px; background: #3498db; color: white; border: none; cursor: pointer; border-radius: 4px; margin: 2px; }
+        .invite-section { background: #e7f3ff; padding: 20px; border-radius: 5px; margin: 20px 0; }
+        input { padding: 10px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>Manage: {{ group.name }}</h1>
+    </div>
+    <div class="container">
+        <a href="/group/{{ group.id }}/"><button style="background: #95a5a6;">← Back</button></a>
+        
+        <div class="invite-section">
+            <h3>Invite User</h3>
+            <form method="post">
+                {% csrf_token %}
+                <input type="text" name="username" placeholder="Username" required>
+                <button type="submit" name="invite_user">Send Invitation</button>
+            </form>
+        </div>
+
+        <h3>Members ({{ members|length }})</h3>
+        {% for member in members %}
+        <div class="member {% if member.role == 'developer' %}developer{% endif %}">
+            <div>
+                <strong>{{ member.username }}</strong>
+                {% if member.id in admin_ids %}<span class="admin-badge">ADMIN</span>{% endif %}
+                {% if member.role == 'developer' %}<span class="developer-badge">DEVELOPER</span>{% endif %}
+                {% if member.id == group.created_by.id %}<span class="admin-badge" style="background: #f39c12;">CREATOR</span>{% endif %}
+            </div>
+            <div>
+                {% if is_creator and member.id != group.created_by.id %}
+                    {% if member.id not in admin_ids %}
+                    <form method="post" style="display: inline; margin: 0;">
+                        {% csrf_token %}
+                        <input type="hidden" name="user_id" value="{{ member.id }}">
+                        <button type="submit" name="make_admin">Make Admin</button>
+                    </form>
+                    {% endif %}
+                    {% if member.role != 'developer' %}
+                    <form method="post" style="display: inline; margin: 0;">
+                        {% csrf_token %}
+                        <input type="hidden" name="user_id" value="{{ member.id }}">
+                        <button type="submit" name="set_developer" style="background: #ffc107; color: #000;">Set as Developer</button>
+                    </form>
+                    {% else %}
+                    <form method="post" style="display: inline; margin: 0;">
+                        {% csrf_token %}
+                        <input type="hidden" name="user_id" value="{{ member.id }}">
+                        <button type="submit" name="remove_developer" style="background: #95a5a6;">Remove Developer</button>
+                    </form>
+                    {% endif %}
+                    <form method="post" style="display: inline; margin: 0;">
+                        {% csrf_token %}
+                        <input type="hidden" name="user_id" value="{{ member.id }}">
+                        <button type="submit" name="remove_member" style="background: #e74c3c;">Remove</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
