@@ -634,17 +634,37 @@ def buy_bugs(request):
             print(f"DEBUG: Creating order with return_url: {return_url}")
             api_response = Cashfree().PGCreateOrder(X_API_VERSION, create_order_request, None, None)
             
+            # DEBUG: Print the full response
+            print(f"DEBUG: Full API Response: {api_response}")
+            print(f"DEBUG: Response Data: {api_response.data}")
+            print(f"DEBUG: Response Type: {type(api_response.data)}")
+            
+            # Get payment_session_id safely
+            payment_session_id = None
+            if hasattr(api_response.data, 'payment_session_id'):
+                payment_session_id = api_response.data.payment_session_id
+            elif hasattr(api_response.data, 'cf_payment_id'):
+                payment_session_id = api_response.data.cf_payment_id
+            else:
+                # Try accessing as dict
+                payment_session_id = getattr(api_response.data, 'payment_session_id', None)
+            
+            print(f"DEBUG: Payment Session ID: {payment_session_id}")
+            
+            if not payment_session_id:
+                return render(request, 'buy_bugs.html', {'error': 'Payment session failed. Please try again.'})
+            
             Payment.objects.create(
                 user=request.user,
                 order_id=order_id,
-                payment_session_id=api_response.data.payment_session_id,
+                payment_session_id=payment_session_id,
                 amount=amount,
                 plan=plan,
                 status='pending'
             )
             
             return render(request, 'payment.html', {
-                'payment_session_id': api_response.data.payment_session_id,
+                'payment_session_id': payment_session_id,
                 'order_id': order_id
             })
             
