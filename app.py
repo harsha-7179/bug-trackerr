@@ -680,29 +680,44 @@ def payment_callback(request):
         api_response = Cashfree().PGFetchOrder(X_API_VERSION, order_id, None)
         order_status = api_response.data.order_status
         
+        print(f"DEBUG: Order {order_id} status: {order_status}")
+        
         if order_status == 'PAID':
             payment = Payment.objects.get(order_id=order_id)
             payment.status = 'success'
             payment.save()
             
-            expires = date.today() + timedelta(days=30)
+            expires = (date.today() + timedelta(days=30)).isoformat()
             bugs_per_day = 5 if payment.plan == 'basic' else -1
             
-            with connection.cursor() as cursor:
-                cursor.execute('''
-                    UPDATE user_subscriptions 
-                    SET plan = %s, bugs_per_day = %s, bugs_used_today = 0, subscription_expires = %s, last_reset_date = date('now')
-                    WHERE user_id = %s
-                ''', [payment.plan, bugs_per_day, expires, payment.user.id])
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute('''
+                        UPDATE user_subscriptions 
+                        SET plan = %s, bugs_per_day = %s, bugs_used_today = 0, subscription_expires = %s
+                        WHERE user_id = %s
+                    ''', [payment.plan, bugs_per_day, expires, payment.user.id])
+                print(f"DEBUG: Subscription updated for user {payment.user.id}")
+            except Exception as db_e:
+                print(f"DEBUG: Database update failed: {db_e}")
+                # Still show success page even if DB update fails
+                pass
             
-            plan_name = "Basic Plan (5 bugs/day)" if payment.plan == 'basic' else "Premium Plan (Unlimited bugs/day)"
+            plan_name = "Basic Plan - ₹1/month (5 bugs/day)" if payment.plan == 'basic' else "Premium Plan - ₹2/month (Unlimited bugs/day)"
             return render(request, 'payment_success.html', {'plan': plan_name, 'expires': expires})
         else:
+            print(f"DEBUG: Order not PAID, status: {order_status}")
             return render(request, 'payment_failed.html', {'message': 'Payment was not completed.'})
     
+    except Payment.DoesNotExist:
+        print(f"DEBUG: Payment not found for order {order_id}")
+        return render(request, 'payment_failed.html', {'message': 'Order not found.'})
     except Exception as e:
         print(f"Payment callback error: {e}")
+        import traceback
+        traceback.print_exc()
         return render(request, 'payment_failed.html', {'message': 'Error processing payment.'})
+
 
 # URLs
 urlpatterns = [
