@@ -724,3 +724,12 @@ if __name__ == '__main__':
             print("✅ Database ready!")
     
     execute_from_command_line(sys.argv)
+    # At the VERY END of app.py, after all your views
+
+application = get_wsgi_application()
+
+if __name__ == '__main__':
+    from django.core.management import execute_from_command_line
+    import sys
+    execute_from_command_line(sys.argv)
+
