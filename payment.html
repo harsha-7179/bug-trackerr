@@ -15,11 +15,22 @@
     <div class="loader"></div>
     
     <script>
-        const cashfree = Cashfree({ mode: "sandbox" });
-        cashfree.checkout({
-            paymentSessionId: "{{ payment_session_id }}",
-            returnUrl: "{{ request.scheme }}://{{ request.get_host }}/payment-callback/?order_id={{ order_id }}"
-        });
+        const paymentSessionId = "{{ payment_session_id }}";
+        const orderId = "{{ order_id }}";
+        
+        console.log("Payment Session ID:", paymentSessionId);
+        console.log("Order ID:", orderId);
+        
+        if (!paymentSessionId) {
+            document.body.innerHTML = "<h2 style='color:red;'>Error: No payment session ID received!</h2>";
+        } else {
+            // Use production mode since using production keys
+            const cashfree = Cashfree({ mode: "production" });
+            cashfree.checkout({
+                paymentSessionId: paymentSessionId,
+                returnUrl: "{{ request.scheme }}://{{ request.get_host }}/payment-callback/?order_id=" + orderId
+            });
+        }
     </script>
 </body>
 </html>
