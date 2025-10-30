@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Processing Payment</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+    <style>
+        body { font-family: Arial; text-align: center; padding: 50px; background: #f5f5f5; }
+        .loader { border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <h2>Redirecting to Payment Gateway...</h2>
+    <div class="loader"></div>
+    
+    <script>
+        const cashfree = Cashfree({ mode: "sandbox" });
+        cashfree.checkout({
+            paymentSessionId: "{{ payment_session_id }}",
+            returnUrl: "{{ request.scheme }}://{{ request.get_host }}/payment-callback/?order_id={{ order_id }}"
+        });
+    </script>
+</body>
+</html>

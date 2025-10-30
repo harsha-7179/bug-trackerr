@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Choose Your Plan</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: Arial; margin: 0; background: #f5f5f5; }
+        .navbar { background: #2c3e50; color: white; padding: 15px 30px; }
+        .container { max-width: 900px; margin: 50px auto; padding: 20px; }
+        .plans { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+        .plan-card { background: white; border-radius: 10px; padding: 30px; flex: 1; min-width: 250px; max-width: 350px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
+        .plan-card.premium { border: 3px solid #9b59b6; }
+        .plan-name { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+        .plan-price { font-size: 48px; color: #27ae60; font-weight: bold; margin: 20px 0; }
+        .plan-price small { font-size: 16px; color: #666; }
+        .features { text-align: left; margin: 20px 0; }
+        .features li { margin: 10px 0; padding-left: 25px; position: relative; }
+        .features li:before { content: "✓"; position: absolute; left: 0; color: #27ae60; font-weight: bold; }
+        button { padding: 15px 40px; background: #3498db; color: white; border: none; cursor: pointer; border-radius: 5px; font-size: 16px; font-weight: bold; width: 100%; }
+        button:hover { background: #2980b9; }
+        .premium button { background: #9b59b6; }
+        .premium button:hover { background: #8e44ad; }
+        
+        @media (max-width: 768px) {
+            .plans { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🐛 Bug Tracker - Choose Your Plan</h1>
+    </div>
+    
+    <div class="container">
+        <h2 style="text-align: center; margin-bottom: 30px;">Upgrade to Report More Bugs</h2>
+        
+        <div class="plans">
+            <div class="plan-card">
+                <div class="plan-name">Basic Plan</div>
+                <div class="plan-price">₹5<small>/month</small></div>
+                <ul class="features">
+                    <li>Report 5 bugs per day</li>
+                    <li>Upload images & videos</li>
+                    <li>Track bug status</li>
+                    <li>Team collaboration</li>
+                    <li>30 days validity</li>
+                </ul>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="plan" value="basic">
+                    <button type="submit">Subscribe Now</button>
+                </form>
+            </div>
+            
+            <div class="plan-card premium">
+                <div class="plan-name" style="color: #9b59b6;">Premium Plan ⭐</div>
+                <div class="plan-price" style="color: #9b59b6;">₹10<small>/month</small></div>
+                <ul class="features">
+                    <li><strong>Unlimited bugs per day</strong></li>
+                    <li>Upload images & videos</li>
+                    <li>Track bug status</li>
+                    <li>Team collaboration</li>
+                    <li>Priority support</li>
+                    <li>30 days validity</li>
+                </ul>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="plan" value="premium">
+                    <button type="submit">Subscribe Now</button>
+                </form>
+            </div>
+        </div>
+        
+        <p style="text-align: center; margin-top: 30px;">
+            <a href="/" style="color: #3498db;">← Back to Home</a>
+        </p>
+    </div>
+</body>
+</html>

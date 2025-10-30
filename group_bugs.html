@@ -86,36 +86,68 @@
             </div>
             
             <div class="form-box">
-                <h2>Report Bug</h2>
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <div>
-                        <input type="text" name="title" placeholder="Subject" required>
+                    <h2>Report Bug</h2>
+                    <div style="background: #f0f8ff; padding: 15px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #3498db;">
+                        <p style="margin: 0;"><strong>Current Plan:</strong> 
+                            {% if subscription.plan == 'free' %}
+                                Free (1 bug/day)
+                            {% elif subscription.plan == 'basic' %}
+                                Basic (5 bugs/day)
+                            {% else %}
+                                Premium (Unlimited bugs/day)
+                            {% endif %}
+                        </p>
+                        {% if bugs_remaining >= 0 %}
+                        <p style="margin: 5px 0 0 0;"><strong>Bugs Remaining Today:</strong> 
+                            <span style="color: {% if bugs_remaining > 0 %}#27ae60{% else %}#e74c3c{% endif %};">{{ bugs_remaining }}</span>
+                        </p>
+                        {% else %}
+                        <p style="margin: 5px 0 0 0;"><strong>Bugs Remaining Today:</strong> 
+                            <span style="color: #27ae60;">Unlimited ♾️</span>
+                        </p>
+                        {% endif %}
+                        {% if subscription.subscription_expires %}
+                        <p style="margin: 5px 0 0 0; font-size: 12px; color: #666;">Subscription expires: {{ subscription.subscription_expires }}</p>
+                        {% endif %}
                     </div>
-                    <div>
-                        <textarea name="description" placeholder="Description" required></textarea>
+                    
+                    {% if error %}
+                    <div style="background: #ffebee; padding: 15px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #e74c3c;">
+                        <p style="color: #c62828; margin: 0 0 10px 0;"><strong>{{ error }}</strong></p>
+                        <a href="/buy-bugs/" style="text-decoration: none;"><button type="button" style="background: #9b59b6;">Upgrade Plan</button></a>
                     </div>
-                    <div>
-                        <select name="status">
-                            <option value="Open">Open</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="Resolved">Resolved</option>
-                            <option value="Closed">Closed</option>
-                        </select>
-                        <input type="date" name="start_date" placeholder="Start Date">
-                        <input type="date" name="due_date" placeholder="Due Date">
-                        <input type="number" name="estimated_hours" placeholder="Est. Hours" style="max-width: 100px;">
-                    </div>
-                    <div>
-                        <input type="file" name="attachment" accept="image/*,video/*">
-                        <small style="color: #666;">Upload image or video (optional)</small>
-                    </div>
-                    <button type="submit" name="add_bug">Submit Bug</button>
-                </form>
-            </div>
+                    {% endif %}
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div>
+                            <input type="text" name="title" placeholder="Subject" required>
+                        </div>
+                        <div>
+                            <textarea name="description" placeholder="Description" required></textarea>
+                        </div>
+                        <div>
+                            <select name="status">
+                                <option value="Open">Open</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Resolved">Resolved</option>
+                                <option value="Closed">Closed</option>
+                            </select>
+                            <input type="date" name="start_date" placeholder="Start Date">
+                            <input type="date" name="due_date" placeholder="Due Date">
+                            <input type="number" name="estimated_hours" placeholder="Est. Hours" style="max-width: 100px;">
+                        </div>
+                        <div>
+                            <input type="file" name="attachment" accept="image/*,video/*">
+                            <small style="color: #666;">Upload image or video (optional)</small>
+                        </div>
+                        <button type="submit" name="add_bug">Submit Bug</button>
+                    </form>
+                </div>
 
-            <h2>All Bugs ({{ bugs.count }})</h2>
-            <div style="overflow-x: auto;">
+
+             <h2>All Bugs ({{ bugs.count }})</h2>
+             <div style="overflow-x: auto;">
                 <table>
                     <thead>
                         <tr>
