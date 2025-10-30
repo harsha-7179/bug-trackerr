@@ -607,7 +607,7 @@ def buy_bugs(request):
         if plan not in ['basic', 'premium']:
             return redirect('/buy-bugs/')
         
-        amount = 5 if plan == 'basic' else 10
+        amount = 1 if plan == 'basic' else 2  # ✅ CHANGED HERE
         
         try:
             order_id = f"order_{request.user.id}_{uuid.uuid4().hex[:8]}"
@@ -618,7 +618,6 @@ def buy_bugs(request):
                 customer_email=request.user.email or "user@example.com"
             )
             
-            # FIXED: Use HTTPS for production
             protocol = "https" if request.is_secure() else "http"
             return_url = f"{protocol}://{request.get_host()}/payment-callback/"
             order_meta = OrderMeta(return_url=return_url)
@@ -634,19 +633,12 @@ def buy_bugs(request):
             print(f"DEBUG: Creating order with return_url: {return_url}")
             api_response = Cashfree().PGCreateOrder(X_API_VERSION, create_order_request, None, None)
             
-            # DEBUG: Print the full response
-            print(f"DEBUG: Full API Response: {api_response}")
-            print(f"DEBUG: Response Data: {api_response.data}")
-            print(f"DEBUG: Response Type: {type(api_response.data)}")
-            
-            # Get payment_session_id safely
             payment_session_id = None
             if hasattr(api_response.data, 'payment_session_id'):
                 payment_session_id = api_response.data.payment_session_id
             elif hasattr(api_response.data, 'cf_payment_id'):
                 payment_session_id = api_response.data.cf_payment_id
             else:
-                # Try accessing as dict
                 payment_session_id = getattr(api_response.data, 'payment_session_id', None)
             
             print(f"DEBUG: Payment Session ID: {payment_session_id}")
@@ -676,6 +668,7 @@ def buy_bugs(request):
     
     subscription = get_or_reset_subscription(request.user.id)
     return render(request, 'buy_bugs.html', {'subscription': subscription})
+
 
 def payment_callback(request):
     order_id = request.GET.get('order_id')
