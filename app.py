@@ -597,7 +597,6 @@ def manage_group(request, group_id):
         'is_creator': group.created_by == request.user
     })
 
-    
 def buy_bugs(request):
     if not request.user.is_authenticated:
         return redirect('/')
@@ -619,8 +618,9 @@ def buy_bugs(request):
                 customer_email=request.user.email or "user@example.com"
             )
             
-            # FIX: Make sure return_url is a proper string
-            return_url = f"http://{request.get_host()}/payment-callback/"
+            # FIXED: Use HTTPS for production
+            protocol = "https" if request.is_secure() else "http"
+            return_url = f"{protocol}://{request.get_host()}/payment-callback/"
             order_meta = OrderMeta(return_url=return_url)
             
             create_order_request = CreateOrderRequest(
@@ -631,7 +631,7 @@ def buy_bugs(request):
                 order_meta=order_meta
             )
             
-            print(f"DEBUG: Creating order with return_url: {return_url}")  # Debug
+            print(f"DEBUG: Creating order with return_url: {return_url}")
             api_response = Cashfree().PGCreateOrder(X_API_VERSION, create_order_request, None, None)
             
             Payment.objects.create(
@@ -651,12 +651,11 @@ def buy_bugs(request):
         except Exception as e:
             print(f"Error creating order: {e}")
             import traceback
-            traceback.print_exc()  # This will show the full error
+            traceback.print_exc()
             return render(request, 'buy_bugs.html', {'error': 'Failed to initiate payment. Please try again.'})
     
     subscription = get_or_reset_subscription(request.user.id)
     return render(request, 'buy_bugs.html', {'subscription': subscription})
-
 
 def payment_callback(request):
     order_id = request.GET.get('order_id')
